@@ -1,23 +1,28 @@
 #define F_CPU 16000000UL
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 
+// MACROS
 #define SBI(y,bit)(y|=(1<<bit));
 #define CBI(y,bit)(y&=~(1<<bit));
-
-#define RELAY_PORT PORTD
-#define RELAY_DDR DDRD
-#define RELAY_PIN PD2
-#define LED_PORT PORTB
-#define LED_DDR DDRB
-#define LED_PIN PB5
-
-volatile uint8_t seconds = 0;
-volatile uint8_t minutes = 0;
-volatile uint8_t hours = 0;
-
-//? BUFFER
+#define RELAY_PORT      PORTD
+#define RELAY_DDR       DDRD
+#define RELAY_PIN       PD2
+#define LED_PORT        PORTB
+#define LED_DDR         DDRB
+#define LED_PIN         PB5
 #define CMD_BUFFER_SIZE 15
+#define LCD_ADDR        0x27   
+#define LCD_BACKLIGHT   0x08
+#define ENABLE          0x04
+#define RS              0x01
+
+// TIME
+volatile uint8_t seconds = 0, minutes = 0, hours = 0;
+volatile int update_display = 0;
+
+// BUFFER UART
 volatile char rx_buffer[CMD_BUFFER_SIZE];
 volatile uint8_t rx_index = 0;
 
@@ -30,7 +35,12 @@ ISR(USART_RX_vect);
 void uart_init(uint16_t ubrr);
 void uart_send_char(char c);
 void uart_send_str(const char* str);
-
+void twi_init(void);
+void lcd_send_blocking(uint8_t byte, uint8_t mode);
+void lcd_init_blocking(void);
+void lcd_set_pos_blocking(uint8_t col, uint8_t row);
+void lcd_print_blocking(const char *str);
+void lcd_show_time_blocking(uint8_t h, uint8_t m, uint8_t s);
 
 int main(void) {
     RELAY_DDR |= (1 << RELAY_PIN);
@@ -42,11 +52,26 @@ int main(void) {
     minutes = 0;
     seconds = 0;
 
+    // TIMER + UART + I2C
     timer1_init();
-    uart_init(103);  // 9600 bps com 16MHz ? UBRR = 103
+    uart_init(103);  // 9600 BPS => UBRR = 103
+    twi_init();
+    
+    // BLOCKING LCD INIT
+    lcd_init_blocking();
     sei();
+    
+    // HEADER LCD
+    lcd_set_pos_blocking(4, 0);
+    lcd_print_blocking("Horario:");
 
-    while (1) {}
+    // LOOPING
+    while (1) {
+        if (update_display) {
+            lcd_show_time_blocking(hours, minutes, seconds);
+            update_display = 0;
+        }
+    }
     return 1;
 }
 
@@ -83,14 +108,14 @@ ISR(TIMER1_COMPA_vect) {
         }
     }
 
-    // ON 5:30
     if (hours == 5 && minutes == 30 && seconds == 0) {
         relay_on();
     }
-    // OF 7:30
     if (hours == 7 && minutes == 30 && seconds == 0) {
         relay_off();
     }
+    
+    update_display = 1;
 }
 ISR(USART_RX_vect) {
     // RECEIVE
@@ -189,4 +214,86 @@ void uart_send_str(const char* str) {
     while (*str) {
         uart_send_char(*str++);
     }
+}
+
+// I2C COMMUNICATION
+void twi_init(void) {
+    TWSR = 0;
+    TWBR = 32;                   // ~100 kHz
+    TWCR = (1<<TWINT)|(1<<TWEN); 
+}
+void lcd_send_blocking(uint8_t byte, uint8_t mode) {
+    uint8_t data;
+    // --- START condition ---
+    TWCR = (1<<TWINT)|(1<<TWSTA)|(1<<TWEN);
+    while (!(TWCR & (1<<TWINT)));
+    // --- SLA+W ---
+    TWDR = (LCD_ADDR << 1);
+    TWCR = (1<<TWINT)|(1<<TWEN);
+    while (!(TWCR & (1<<TWINT)));
+
+    // High nibble
+    data = ((byte >> 4) & 0x0F) << 4;
+    data |= LCD_BACKLIGHT;
+    if (mode) data |= RS;
+    // ENABLE pulse
+    TWDR = data | ENABLE;
+    TWCR = (1<<TWINT)|(1<<TWEN);
+    while (!(TWCR & (1<<TWINT)));
+    TWDR = data;
+    TWCR = (1<<TWINT)|(1<<TWEN);
+    while (!(TWCR & (1<<TWINT)));
+
+    // Low nibble
+    data = (byte & 0x0F) << 4;
+    data |= LCD_BACKLIGHT;
+    if (mode) data |= RS;
+    // ENABLE pulse
+    TWDR = data | ENABLE;
+    TWCR = (1<<TWINT)|(1<<TWEN);
+    while (!(TWCR & (1<<TWINT)));
+    TWDR = data;
+    TWCR = (1<<TWINT)|(1<<TWEN);
+    while (!(TWCR & (1<<TWINT)));
+
+    // STOP condition
+    TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTO);
+    _delay_us(50);  // small delay to settle
+}
+void lcd_init_blocking(void) {
+    _delay_ms(50); // power-up delay
+    // function set 8-bit x3
+    for (uint8_t i = 0; i < 3; i++) {
+        lcd_send_blocking(0x03, 0);
+        _delay_ms(5);
+    }
+    // set 4-bit mode
+    lcd_send_blocking(0x02, 0);
+    _delay_ms(5);
+    // function set, display on, entry, clear
+    lcd_send_blocking(0x28, 0);
+    lcd_send_blocking(0x0C, 0);
+    lcd_send_blocking(0x06, 0);
+    lcd_send_blocking(0x01, 0);
+    _delay_ms(2);
+}
+void lcd_set_pos_blocking(uint8_t col, uint8_t row) {
+    uint8_t addr = (row == 0) ? 0x00 : 0x40;
+    lcd_send_blocking(0x80 | (addr + col), 0);
+}
+void lcd_print_blocking(const char *str) {
+    while (*str) {
+        lcd_send_blocking(*str++, 1);
+    }
+}
+void lcd_show_time_blocking(uint8_t h, uint8_t m, uint8_t s) {
+    char buf[9] = {
+        '0' + h/10, '0' + h%10, ':',
+        '0' + m/10, '0' + m%10, ':',
+        '0' + s/10, '0' + s%10,
+        '\0'
+    };
+    uint8_t start_col = (16 - 8) / 2;
+    lcd_set_pos_blocking(start_col, 1);
+    lcd_print_blocking(buf);
 }
