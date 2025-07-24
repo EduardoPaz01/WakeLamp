@@ -8,15 +8,17 @@
 #define CBI(y,bit)(y&=~(1<<bit));
 #define RELAY_PORT      PORTD
 #define RELAY_DDR       DDRD
-#define RELAY_PIN       PD2
+#define RELAY_PIN_1     PD2
+#define RELAY_PIN_2     PD3
 #define LED_PORT        PORTB
 #define LED_DDR         DDRB
 #define LED_PIN         PB5
-#define CMD_BUFFER_SIZE 15
+#define CMD_BUFFER_SIZE 16
 #define LCD_ADDR        0x27   
 #define LCD_BACKLIGHT   0x08
 #define ENABLE          0x04
 #define RS              0x01
+#define ERR_MSG "$ERR\n"
 
 // TIME
 volatile uint8_t seconds = 0, minutes = 0, hours = 0;
@@ -43,7 +45,8 @@ void lcd_print_blocking(const char *str);
 void lcd_show_time_blocking(uint8_t h, uint8_t m, uint8_t s);
 
 int main(void) {
-    RELAY_DDR |= (1 << RELAY_PIN);
+    RELAY_DDR |= (1 << RELAY_PIN_1);
+    //RELAY_DDR |= (1 << RELAY_PIN_2);
     LED_DDR |= (1 << LED_PIN);
     relay_off();
 
@@ -77,11 +80,13 @@ int main(void) {
 
 // RELAY CONFIG
 void relay_on() {
-    SBI(RELAY_PORT, RELAY_PIN);
+    CBI(RELAY_PORT, RELAY_PIN_1);
+    //CBI(RELAY_PORT, RELAY_PIN_2);
     SBI(LED_PORT, LED_PIN);  
 }
 void relay_off() {
-    CBI(RELAY_PORT, RELAY_PIN);
+    SBI(RELAY_PORT, RELAY_PIN_1);
+    //SBI(RELAY_PORT, RELAY_PIN_2);
     CBI(LED_PORT, LED_PIN); 
 }
 
@@ -117,67 +122,33 @@ ISR(TIMER1_COMPA_vect) {
     
     update_display = 1;
 }
+#define ERR_MSG "$ERR\n"
+
 ISR(USART_RX_vect) {
     // RECEIVE
     char received = UDR0;
-    if (rx_index < CMD_BUFFER_SIZE - 1) {
-        rx_buffer[rx_index++] = received;
-        rx_buffer[rx_index] = '\0'; 
-    }
-    // $GET
-    if (rx_index == 4 &&
-        rx_buffer[0] == '$' &&
-        rx_buffer[1] == 'G' &&
-        rx_buffer[2] == 'E' &&
-        rx_buffer[3] == 'T') 
-    {
-        // GET TIME
-        cli();
-        uint8_t h = hours;
-        uint8_t m = minutes;
-        uint8_t s = seconds;
-        sei();
-        
-        // RETURN
-        uart_send_str("$SMH.");
-        uart_send_char('0' + h / 10);
-        uart_send_char('0' + h % 10);
-        uart_send_char('.');
-        uart_send_char('0' + m / 10);
-        uart_send_char('0' + m % 10);
-        uart_send_char('.');
-        uart_send_char('0' + s / 10);
-        uart_send_char('0' + s % 10);
-        uart_send_char('\n');
 
-        // FINISH COMMUNICATION
-        rx_index = 0;  
+    if (rx_index < CMD_BUFFER_SIZE - 1 && received != '\n' && received != '\r') {
+        rx_buffer[rx_index++] = received;
+        rx_buffer[rx_index] = '\0';
     }
-    // $SET.HH.MM.SS
-    if (rx_index == 14 &&
-        rx_buffer[0] == '$' &&
-        rx_buffer[1] == 'S' &&
-        rx_buffer[2] == 'E' &&
-        rx_buffer[3] == 'T' &&
-        rx_buffer[4] == '.' &&
-        rx_buffer[7] == '.' &&
-        rx_buffer[10] == '.') {
-        // ASCII TO INT 
-        uint8_t h = (rx_buffer[5] - '0') * 10 + (rx_buffer[6] - '0');
-        uint8_t m = (rx_buffer[8] - '0') * 10 + (rx_buffer[9] - '0');
-        uint8_t s = (rx_buffer[11] - '0') * 10 + (rx_buffer[12] - '0');
-        
-        // SET 
-        if (h < 24 && m < 60 && s < 60) {
-            // SET TIME
-            cli(); 
-            hours = h;
-            minutes = m;
-            seconds = s;
+
+    if (received == '\n' || received == '\r' || rx_index >= CMD_BUFFER_SIZE - 1) {
+
+        // $GET 
+        if (rx_index == 4 &&
+            rx_buffer[0] == '$' &&
+            rx_buffer[1] == 'G' &&
+            rx_buffer[2] == 'E' &&
+            rx_buffer[3] == 'T') 
+        {
+            cli();
+            uint8_t h = hours;
+            uint8_t m = minutes;
+            uint8_t s = seconds;
             sei();
-            
-            // SEND CONFIRMATION
-            uart_send_str("$NHMS.");
+
+            uart_send_str("$SMH.");
             uart_send_char('0' + h / 10);
             uart_send_char('0' + h % 10);
             uart_send_char('.');
@@ -188,11 +159,73 @@ ISR(USART_RX_vect) {
             uart_send_char('0' + s % 10);
             uart_send_char('\n');
         }
-        
-        // FINISH COMMUNICATION
-        rx_index = 0;  
+
+        // $SET.HH.MM.SS
+        else if (rx_index == 13 &&
+                 rx_buffer[0] == '$' &&
+                 rx_buffer[1] == 'S' &&
+                 rx_buffer[2] == 'E' &&
+                 rx_buffer[3] == 'T' &&
+                 rx_buffer[4] == '.' &&
+                 rx_buffer[7] == '.' &&
+                 rx_buffer[10] == '.') 
+        {
+            uint8_t h = (rx_buffer[5] - '0') * 10 + (rx_buffer[6] - '0');
+            uint8_t m = (rx_buffer[8] - '0') * 10 + (rx_buffer[9] - '0');
+            uint8_t s = (rx_buffer[11] - '0') * 10 + (rx_buffer[12] - '0');
+
+            if (h < 24 && m < 60 && s < 60) {
+                cli();
+                hours = h;
+                minutes = m;
+                seconds = s;
+                sei();
+
+                uart_send_str("$NHMS.");
+                uart_send_char('0' + h / 10);
+                uart_send_char('0' + h % 10);
+                uart_send_char('.');
+                uart_send_char('0' + m / 10);
+                uart_send_char('0' + m % 10);
+                uart_send_char('.');
+                uart_send_char('0' + s / 10);
+                uart_send_char('0' + s % 10);
+                uart_send_char('\n');
+            } else {
+                uart_send_str(ERR_MSG);
+            }
+        }
+
+        // $SRY.n
+        else if (rx_index == 5 &&
+                 rx_buffer[0] == '$' &&
+                 rx_buffer[1] == 'S' &&
+                 rx_buffer[2] == 'R' &&
+                 rx_buffer[3] == '.') 
+        {
+            uart_send_str("$SR.1\n");
+            relay_on();
+        }
+
+        // $CRY.n
+        else if (rx_index == 5 &&
+                 rx_buffer[0] == '$' &&
+                 rx_buffer[1] == 'C' &&
+                 rx_buffer[2] == 'R' &&
+                 rx_buffer[3] == '.') 
+        {
+            uart_send_str("$CR.1\n");
+            relay_off();
+        }
+
+        else {
+            uart_send_str(ERR_MSG);
+        }
+
+        rx_index = 0;
     }
 }
+
 
 // UART COMMUNICATION
 void uart_init(uint16_t ubrr) {
