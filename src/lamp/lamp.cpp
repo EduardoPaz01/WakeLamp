@@ -1,27 +1,27 @@
 #include "lamp.hpp"
 
-lamp::lamp(uint8_t lamp_1_pin = 12, uint8_t lamp_2_pin = 13, uint8_t button_pin = 14){
-	lamp_1 = lamp_1_pin;
-	lamp_2 = lamp_2_pin;
-	button = button_pin;
+lamp::lamp(uint8_t LAMP1_PIN = 12, uint8_t LAMP2_PIN = 13, uint8_t BUTTON_PIN = 14){
+	LAMP1 = LAMP1_PIN;
+	LAMP2 = LAMP2_PIN;
+	BUTTON = BUTTON_PIN;
 
-	pinMode(lamp_1, OUTPUT);
-	pinMode(lamp_2, OUTPUT);
-	pinMode(button, INPUT_PULLUP);
+	pinMode(LAMP1, OUTPUT);
+	pinMode(LAMP2, OUTPUT);
+	pinMode(BUTTON, INPUT_PULLUP);
 }
 
-void lamp::lamp_1_on(void){
-	digitalWrite(lamp_1, HIGH);
+void lamp::lamp1On(void){
+	digitalWrite(LAMP1, HIGH);
 }
 
-void lamp::lamp_1_off(void){
-	digitalWrite(lamp_1, LOW);
+void lamp::lamp1Off(void){
+	digitalWrite(LAMP1, LOW);
 }
 
-void lamp::lamp_2_on(void){
-	digitalWrite(lamp_2, HIGH);
+void lamp::lamp2On(void){
+	digitalWrite(LAMP2, HIGH);
 }
 
-void lamp::lamp_2_off(void){
-	digitalWrite(lamp_2, LOW);
+void lamp::lamp2Off(void){
+	digitalWrite(LAMP2, LOW);
 }

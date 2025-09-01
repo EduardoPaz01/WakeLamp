@@ -1,46 +1,48 @@
 /**
+ * Class representing a Lamp controller
  */
 class lamp {
-  private:
-    /**
-     * Pin number for lamp 1
-     */
-    int lamp_1 = 0;
 
-    /**
-     * Pin number for lamp 2
-     */
-    int lamp_2 = 0;
+private:
+  /**
+    * Pin number for lamp 1
+    */
+  int LAMP1 = 0;
 
-    /**
-     * Pin number for button
-     */
-    int button = 0;
+  /**
+    * Pin number for lamp 2
+    */
+  int LAMP2 = 0;
 
-  public:
+  /**
+    * Pin number for button
+    */
+  int BUTTON = 0;
 
-    /**
-     * Constructor of the lamp class
-     */
-    lamp(uint8_t lamp_1_pin = 12, uint8_t lamp_2_pin = 13, uint8_t button_pin = 14);
+public:
 
-    /**
-     * Turn on lamp 1
-     */
-    void lamp_1_on();
+  /**
+    * Constructor of the lamp class
+    */
+  lamp(uint8_t LAMP1_PIN = 12, uint8_t LAMP2_PIN = 13, uint8_t BUTTON_PIN = 14);
 
-    /**
-     * Turn off lamp 1
-     */
-    void lamp_1_off();
+  /**
+    * Turn on lamp 1
+    */
+  void lamp1On();
 
-    /**
-     * Turn on lamp 2
-     */
-    void lamp_2_on();
+  /**
+    * Turn off lamp 1
+    */
+  void lamp1Off();
 
-    /**
-     * Turn off lamp 2
-     */
-    void lamp_2_off();
+  /**
+    * Turn on lamp 2
+    */
+  void lamp2On();
+
+  /**
+    * Turn off lamp 2
+    */
+  void lamp2Off();
 };
