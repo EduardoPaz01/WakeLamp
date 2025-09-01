@@ -1,6 +1,6 @@
 #include "lamp.hpp"
 
-lamp::lamp(uint8_t LAMP1_PIN = 12, uint8_t LAMP2_PIN = 13, uint8_t BUTTON_PIN = 14){
+lamp::lamp(uint8_t LAMP1_PIN, uint8_t LAMP2_PIN, uint8_t BUTTON_PIN){
 	LAMP1 = LAMP1_PIN;
 	LAMP2 = LAMP2_PIN;
 	BUTTON = BUTTON_PIN;

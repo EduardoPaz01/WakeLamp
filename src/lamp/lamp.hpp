@@ -1,48 +1,54 @@
+#include <Arduino.h>
+
 /**
- * Class representing a Lamp controller
+ * @brief Class representing a Lamp controller
  */
 class lamp {
 
 private:
   /**
-    * Pin number for lamp 1
+    * @brief Pin number for lamp 1
     */
   int LAMP1 = 0;
 
   /**
-    * Pin number for lamp 2
+    * @brief Pin number for lamp 2
     */
   int LAMP2 = 0;
 
   /**
-    * Pin number for button
+    * @brief Pin number for button
     */
   int BUTTON = 0;
 
 public:
 
   /**
-    * Constructor of the lamp class
+    * @brief Constructor of the lamp class
+    *
+    * @param LAMP1_PIN Pin number for lamp 1
+    * @param LAMP2_PIN Pin number for lamp 2
+    * @param BUTTON_PIN Pin number for button
     */
   lamp(uint8_t LAMP1_PIN = 12, uint8_t LAMP2_PIN = 13, uint8_t BUTTON_PIN = 14);
 
   /**
-    * Turn on lamp 1
+    * @brief Turn on lamp 1
     */
   void lamp1On();
 
   /**
-    * Turn off lamp 1
+    * @brief Turn off lamp 1
     */
   void lamp1Off();
 
   /**
-    * Turn on lamp 2
+    * @brief Turn on lamp 2
     */
   void lamp2On();
 
   /**
-    * Turn off lamp 2
+    * @brief Turn off lamp 2
     */
   void lamp2Off();
 };
