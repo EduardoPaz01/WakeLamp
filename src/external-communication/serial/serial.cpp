@@ -5,11 +5,11 @@ serial::serial(int FREQUENCY_SERIAL) {
   Serial.begin(FREQUENCY);
 }
 
-serial::~serial() {
+serial::~serial(void) {
   Serial.end();
 }
 
-uint32_t serial::processSerial() {
+uint32_t serial::processSerial(void) {
   static String buf = "";
   uint32_t return_value = UNKNOWN_CMD; 
 
@@ -25,39 +25,52 @@ uint32_t serial::processSerial() {
 
       if (CACHE_LINE.startsWith("$")) {
         CACHE_LINE = CACHE_LINE.substring(1); // remove $
-        if (CACHE_LINE.startsWith("GET.TIME")) {
+
+        if (CACHE_LINE == "GET.TIME"){
           return_value = GET_TIME;
-        } 
-        else if (CACHE_LINE.startsWith("UPDATE.TIME")) {
+        }
+        else if (CACHE_LINE == "UPDATE.TIME"){
           return_value = UPDATE_TIME;
-        } 
+        }
         else if (CACHE_LINE.startsWith("SET.WAKE.TIME.")) {
-          CACHE_LINE = CACHE_LINE.substring(14); // remove SET.WAKE.TIME.
+          CACHE_LINE = CACHE_LINE.substring(14);
           BUFFER = CACHE_LINE;
           return_value = SET_WAKE_TIME;
         } 
-        else if (CACHE_LINE.startsWith("GET.WAKE.TIME")) {
+        else if (CACHE_LINE == "GET.WAKE.TIME") {
           return_value = GET_WAKE_TIME;
-        } 
+        }
         else if (CACHE_LINE.startsWith("SET.LAMP.INTERVAL.")) {
-          CACHE_LINE = CACHE_LINE.substring(18); // remove SET.LAMP.INTERVAL.
+          CACHE_LINE = CACHE_LINE.substring(18);
           BUFFER = CACHE_LINE;
           return_value = SET_LAMP_INTERVAL;
-        } 
-        else if (CACHE_LINE.startsWith("GET.LAMP.INTERVAL")) {
+        }         
+        else if (CACHE_LINE == "GET.LAMP.INTERVAL") {
           return_value = GET_LAMP_INTERVAL;
-        } 
-        else if (CACHE_LINE.startsWith("GET.SSIDS")) {
-          return_value = GET_SSIDS;
-        } 
-        else if (CACHE_LINE.startsWith("GET.USERS.SSID")) {
-          return_value = GET_USERS_SSID;
-        } 
-        else if (CACHE_LINE.startsWith("TRY.CONNECT.")) {
-          CACHE_LINE = CACHE_LINE.substring(12); // remove TRY.CONNECT.
+        }
+        else if (CACHE_LINE == "GET.ALL.SSIDS") 
+          return_value = GET_ALL_SSIDS;
+        else if (CACHE_LINE.startsWith("CONNECT.")) {
+          CACHE_LINE = CACHE_LINE.substring(8);
           BUFFER = CACHE_LINE;
-          return_value = TRY_CONNECT;
-        } else {
+          return_value = CONNECT;
+        } 
+        else if(CACHE_LINE == "DISCONNECT"){
+          return_value = DISCONNECT;
+        }
+        else if(CACHE_LINE == "GET.IS.CONNECTED"){
+          return_value = GET_IS_CONNECTED;
+        }
+        else if(CACHE_LINE == "GET.IP.ADDRESS"){
+          return_value = GET_IP_ADDRESS;
+        }
+        else if(CACHE_LINE == "GET.SSID"){
+          return_value = GET_SSID;
+        }
+        else if(CACHE_LINE == "GET.STATUS"){
+          return_value = GET_STATUS;
+        }
+        else {
           return_value = UNKNOWN_CMD;
         }
       } else {
@@ -68,13 +81,12 @@ uint32_t serial::processSerial() {
       return return_value; 
     } else {
       buf += c;
-      if (buf.length() > 512) {
-        buf = buf.substring(0, 512); 
+      if (buf.length() > 1024) {
+        buf = buf.substring(0, 1024); 
       }
     }
   }
 
-  // se não teve nada, retornar UNKNOWN_CMD
   return UNKNOWN_CMD;
 }
 
@@ -82,6 +94,6 @@ void serial::print(String MESSAGE) {
   Serial.println(MESSAGE);
 }
 
-String serial::getBuffer() {
+String serial::getBuffer(void) {
   return BUFFER;
 }
