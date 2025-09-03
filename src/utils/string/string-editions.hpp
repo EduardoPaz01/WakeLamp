@@ -1,3 +1,6 @@
+#include <Arduino.h> 
+#include <WiFi.h>
+
 /**
  * Convert authentication type to string
  */

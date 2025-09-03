@@ -1,31 +1,32 @@
+#ifndef WIFICONTROLLER_HPP
+#define WIFICONTROLLER_HPP
+
 #include <WiFi.h>
+#include <Arduino.h>
+#include "../../utils/string/string-editions.hpp"
 
 /**
  * Class representing a WiFi connection
  */
-class wifi {
+class wifiController {
 
 private:
-  /** 
-   * SSID of the WiFi network
-   */
-  const char* ssid;
-
-  /** 
-   * Password of the WiFi network
-   */
-  const char* password;
+  const static int MAX_SCAN = 64;
+  String scan_ssids[MAX_SCAN];
+  int scan_rssis[MAX_SCAN];
+  int scan_auths[MAX_SCAN];
+  int scan_count = 0;
 
 public:
   /**
    * Constructor for the wifi class
    */
-  wifi(void);
+  wifiController(void);
 
   /**
    * Get the SSID of the connected WiFi
    */
-  String getAllSSID();
+  void getAllSSIDS(void);
 
   /**
    * Begin the WiFi connection
@@ -35,25 +36,27 @@ public:
   /**
    * Disconnect from the WiFi network
    */
-  void disconnect();
+  void disconnect(void);
 
   /**
    * Check if the WiFi is connected
    */
-  bool isConnected();
+  bool isConnected(void);
 
   /**
    * Get the IP address of the WiFi connection
    */
-  String getIPAddress();
+  String getIPAddress(void);
 
   /**
    * Get the SSID of the connected WiFi
    */
-  String getSSID();
+  String getSSID(void);
 
   /**
    * Get the status of the WiFi connection
    */
-  String getStatus();
+  String getStatus(void);
 };
+
+#endif // WIFICONTROLLER_HPP

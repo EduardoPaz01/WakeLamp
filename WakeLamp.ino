@@ -1,4 +1,5 @@
 #include "src/external-communication/serial/serial.hpp"
+#include "src/external-communication/wifi/wifiController.hpp"
 #include "src/lamp/lamp.hpp"
 #include "src/time/timeController.hpp"
 
@@ -30,6 +31,7 @@ void loop() {
       case GET_LAMP_INTERVAL:
         break;
       case GET_ALL_SSIDS:
+        myWifi.getAllSSIDS();  
         break;
       case CONNECT:
         break;
