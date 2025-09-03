@@ -60,6 +60,7 @@ void loop() {
         break;
       }
       case GET_IS_CONNECTED: {
+        myWifi.isConnected();
         break;
       }
       case GET_IP_ADDRESS: {

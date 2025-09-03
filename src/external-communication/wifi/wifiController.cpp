@@ -85,3 +85,19 @@ void wifiController::disconnect(void){
   WiFi.disconnect();
   Serial.println("$DCNT");
 }
+
+bool wifiController::isConnected(void) {
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("$IS_CNT");
+    return true;
+  } else {
+    Serial.println("$ISN_CNT");
+    return false;
+  }
+}
+
+String wifiController::getIPAddress(void){}
+
+String wifiController::getSSID(void){}
+
+String wifiController::getStatus(void){}
