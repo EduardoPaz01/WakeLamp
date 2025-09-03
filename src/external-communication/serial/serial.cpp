@@ -34,7 +34,7 @@ uint32_t serial::processSerial(void) {
         }
         else if (CACHE_LINE.startsWith("SET.WAKE.TIME.")) {
           CACHE_LINE = CACHE_LINE.substring(14);
-          BUFFER = CACHE_LINE;
+          BUFFER = String(SET_WAKE_TIME) + "." + CACHE_LINE;
           return_value = SET_WAKE_TIME;
         } 
         else if (CACHE_LINE == "GET.WAKE.TIME") {
@@ -42,7 +42,7 @@ uint32_t serial::processSerial(void) {
         }
         else if (CACHE_LINE.startsWith("SET.LAMP.INTERVAL.")) {
           CACHE_LINE = CACHE_LINE.substring(18);
-          BUFFER = CACHE_LINE;
+          BUFFER = String(SET_LAMP_INTERVAL) + "." + CACHE_LINE;
           return_value = SET_LAMP_INTERVAL;
         }         
         else if (CACHE_LINE == "GET.LAMP.INTERVAL") {
@@ -52,7 +52,7 @@ uint32_t serial::processSerial(void) {
           return_value = GET_ALL_SSIDS;
         else if (CACHE_LINE.startsWith("CONNECT.")) {
           CACHE_LINE = CACHE_LINE.substring(8);
-          BUFFER = CACHE_LINE;
+          BUFFER = String(CONNECT) + "." + CACHE_LINE;
           return_value = CONNECT;
         } 
         else if(CACHE_LINE == "DISCONNECT"){

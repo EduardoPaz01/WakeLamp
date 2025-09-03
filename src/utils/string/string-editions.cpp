@@ -19,3 +19,11 @@ String trimStr(const String &s) {
   t.trim();
   return t;
 }
+
+String removePrefix(String str){
+  int dotIndex = str.indexOf('.');
+  if (dotIndex != -1) {
+    return str.substring(dotIndex + 1);
+  }
+  return str;
+}

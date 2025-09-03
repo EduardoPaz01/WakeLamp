@@ -11,17 +11,24 @@
 class wifiController {
 
 private:
+  const long CONNECT_TIMEOUT_MS = 20000;
   const static int MAX_SCAN = 64;
   String scan_ssids[MAX_SCAN];
   int scan_rssis[MAX_SCAN];
   int scan_auths[MAX_SCAN];
   int scan_count = 0;
+  String IP;
 
 public:
   /**
    * Constructor for the wifi class
    */
   wifiController(void);
+
+  /**
+   * Update the list of saved SSIDs
+   */
+  void updateSSIDS(void);
 
   /**
    * Get the SSID of the connected WiFi
@@ -31,7 +38,7 @@ public:
   /**
    * Begin the WiFi connection
    */
-  void connect(const char* ssid, const char* password);
+  void connect(String ssid, String password);
 
   /**
    * Disconnect from the WiFi network

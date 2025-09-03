@@ -2,6 +2,8 @@
 #include "src/external-communication/wifi/wifiController.hpp"
 #include "src/lamp/lamp.hpp"
 #include "src/time/timeController.hpp"
+#include "src/utils/string/string-editions.hpp"
+#include "Arduino.h"
 
 int RELAY1 = 12;
 int RELAY2 = 13;
@@ -20,37 +22,59 @@ void loop() {
   uint32_t command = mySerial.processSerial();
   if (command != UNKNOWN_CMD) {
     switch (command) {
-      case GET_TIME:
+      case GET_TIME: {
         break;
-      case UPDATE_TIME:
+      }
+      case UPDATE_TIME: {
         break;
-      case SET_WAKE_TIME:
+      }
+      case SET_WAKE_TIME: {
         break;
-      case GET_WAKE_TIME:
+      }
+      case GET_WAKE_TIME: {
         break;
-      case SET_LAMP_INTERVAL:
+      }
+      case SET_LAMP_INTERVAL: {
         break;
-      case GET_LAMP_INTERVAL:
+      }
+      case GET_LAMP_INTERVAL: {
         break;
-      case GET_ALL_SSIDS:
+      }
+      case GET_ALL_SSIDS: {
         myWifi.getAllSSIDS();  
         break;
-      case CONNECT:
+      }
+      case CONNECT:{
+        String current_buffer = mySerial.getBuffer();
+        if (current_buffer.startsWith(String(CONNECT))) {
+          current_buffer = removePrefix(current_buffer);
+          int dotIndex = current_buffer.indexOf('.');
+          String SSID = current_buffer.substring(0, dotIndex);
+          String PASS = current_buffer.substring(dotIndex + 1);
+          myWifi.connect(SSID, PASS);
+        }
         break;
-      case DISCONNECT:
+      }
+      case DISCONNECT: {
         break;
-      case GET_IS_CONNECTED:
+      }
+      case GET_IS_CONNECTED: {
         break;
-      case GET_IP_ADDRESS:
+      }
+      case GET_IP_ADDRESS: {
         break;
-      case GET_SSID:
+      }
+      case GET_SSID: {
         break;
-      case GET_STATUS:
+      }
+      case GET_STATUS: {
         break;
+      }
 
-      default:
+      default: {
         mySerial.print("Unknown command.");
         break;
+      }
     }
   }
 }
