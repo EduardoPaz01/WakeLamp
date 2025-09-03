@@ -68,6 +68,7 @@ void loop() {
         break;
       }
       case GET_SSID: {
+        myWifi.getSSID();
         break;
       }
       case GET_STATUS: {
