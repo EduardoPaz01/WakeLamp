@@ -7,7 +7,6 @@ wifiController::wifiController(void) {
 void wifiController::updateSSIDS(void) {
   scan_count = 0;
   WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
   delay(100);
 
   int n = WiFi.scanNetworks();
@@ -52,7 +51,7 @@ void wifiController::connect(String ssid, String password){
   
   bool flag = false;
   WiFi.mode(WIFI_STA);
-  WiFi.disconnect(true);
+  disconnect();
   delay(100);
   if (password.length() == 0) WiFi.begin(ssid.c_str());
   else WiFi.begin(ssid.c_str(), password.c_str());
@@ -80,4 +79,9 @@ void wifiController::connect(String ssid, String password){
   }
 
   Serial.println("$ERR");
+}
+
+void wifiController::disconnect(void){
+  WiFi.disconnect();
+  Serial.println("$DCNT");
 }

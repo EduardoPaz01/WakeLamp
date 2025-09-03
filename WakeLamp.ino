@@ -56,6 +56,7 @@ void loop() {
         break;
       }
       case DISCONNECT: {
+        myWifi.disconnect();
         break;
       }
       case GET_IS_CONNECTED: {
