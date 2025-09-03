@@ -72,6 +72,7 @@ void loop() {
         break;
       }
       case GET_STATUS: {
+        myWifi.getStatus();
         break;
       }
 

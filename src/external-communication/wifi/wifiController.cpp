@@ -108,8 +108,6 @@ String wifiController::getIPAddress(void){
   }
 }
 
-String wifiController::getSSID(void){}
-
 String wifiController::getSSID(void) {
   if (isConnected()) {
     String ssid = WiFi.SSID();
@@ -119,4 +117,24 @@ String wifiController::getSSID(void) {
   } else {
     return "";
   }
+}
+
+String wifiController::getStatus(void) {
+  wl_status_t status = WiFi.status();
+  String statusStr;
+
+  switch (status) {
+    case WL_CONNECTED:        statusStr = "CONNECTED"; break;
+    case WL_IDLE_STATUS:      statusStr = "IDLE"; break;
+    case WL_NO_SSID_AVAIL:    statusStr = "NO_SSID"; break;
+    case WL_CONNECT_FAILED:   statusStr = "FAIL"; break;
+    case WL_CONNECTION_LOST:  statusStr = "LOST"; break;
+    case WL_DISCONNECTED:     statusStr = "DISCONNECTED"; break;
+    default:                  statusStr = "UNKNOWN"; break;
+  }
+
+  Serial.println("$STATUS");
+  Serial.print(statusStr);
+
+  return statusStr;
 }
