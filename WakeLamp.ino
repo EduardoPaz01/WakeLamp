@@ -9,6 +9,8 @@ int BUTTON = 14;
 
 lamp myLamp(RELAY1, RELAY2, BUTTON);
 serial mySerial(115200);
+wifiController myWifi; 
+timeController myTime;
 
 void setup() {
 
