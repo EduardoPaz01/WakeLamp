@@ -96,7 +96,19 @@ bool wifiController::isConnected(void) {
   }
 }
 
-String wifiController::getIPAddress(void){}
+String wifiController::getIPAddress(void){
+  bool is_connected = isConnected();
+
+  if(is_connected){
+    IP = WiFi.localIP().toString();
+    Serial.println("$IP");
+    Serial.print(IP);
+    return IP;
+  }
+  else{
+    return "";
+  }
+}
 
 String wifiController::getSSID(void){}
 

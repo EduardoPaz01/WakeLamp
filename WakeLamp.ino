@@ -64,6 +64,7 @@ void loop() {
         break;
       }
       case GET_IP_ADDRESS: {
+        myWifi.getIPAddress();
         break;
       }
       case GET_SSID: {
