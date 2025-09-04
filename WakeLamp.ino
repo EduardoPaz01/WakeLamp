@@ -23,9 +23,16 @@ void loop() {
   if (command != UNKNOWN_CMD) {
     switch (command) {
       case GET_TIME: {
+        mySerial.print("HOUR:");
+        mySerial.print(String(myTime.getTime().tm_hour));
+        mySerial.print(" MINUTE:");
+        mySerial.print(String(myTime.getTime().tm_min));
+        mySerial.print(" SECOND:");
+        mySerial.print(String(myTime.getTime().tm_sec));
         break;
       }
       case UPDATE_TIME: {
+        myTime.updateTime(myWifi.getTimeFromNTP());
         break;
       }
       case SET_WAKE_TIME: {

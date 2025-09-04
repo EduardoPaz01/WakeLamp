@@ -1,7 +1,7 @@
 #include "wifiController.hpp"
 
 wifiController::wifiController(void) {
-  // Constructor implementation
+  
 }
 
 void wifiController::updateSSIDS(void) {
@@ -137,4 +137,24 @@ String wifiController::getStatus(void) {
   Serial.print(statusStr);
 
   return statusStr;
+}
+
+struct tm wifiController::getTimeFromNTP(void) {
+  configTime(0, 0, "pool.ntp.org");  
+
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    Serial.println("$TIME:ERROR");
+    return {};
+  }
+
+  Serial.println("$TIME");
+  Serial.print("HOUR:");
+  Serial.print(timeinfo.tm_hour);
+  Serial.print(" MINUTE:");
+  Serial.print(timeinfo.tm_min);
+  Serial.print(" SECOND:");
+  Serial.println(timeinfo.tm_sec);
+
+  return timeinfo;
 }

@@ -2,6 +2,7 @@
 #define WIFICONTROLLER_HPP
 
 #include <WiFi.h>
+#include <time.h>
 #include <Arduino.h>
 #include "../../utils/string/string-editions.hpp"
 
@@ -64,6 +65,11 @@ public:
    * Get the status of the WiFi connection
    */
   String getStatus(void);
+
+  /**
+   * Get the schedule online
+   */
+  struct tm getTimeFromNTP(void);
 };
 
 #endif // WIFICONTROLLER_HPP
