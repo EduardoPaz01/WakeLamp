@@ -3,7 +3,9 @@
 #include "src/lamp/lamp.hpp"
 #include "src/time/timeController.hpp"
 #include "src/utils/string/string-editions.hpp"
+#include "src/time/timeClass.hpp"
 #include "Arduino.h"
+#include "time.h"
 
 int RELAY1 = 12;
 int RELAY2 = 13;
@@ -19,6 +21,8 @@ void setup() {
 }
 
 void loop() {
+  myTime.tick();
+
   uint32_t command = mySerial.processSerial();
   if (command != UNKNOWN_CMD) {
     switch (command) {
@@ -39,12 +43,24 @@ void loop() {
         break;
       }
       case GET_WAKE_TIME: {
+        mySerial.print("HOUR:");
+        mySerial.print(String(myTime.getWakeTime().HOUR));
+        mySerial.print(" MINUTE:");
+        mySerial.print(String(myTime.getWakeTime().MINUTE));
+        mySerial.print(" SECOND:");
+        mySerial.print(String(myTime.getWakeTime().SECOND));
         break;
       }
       case SET_LAMP_INTERVAL: {
         break;
       }
       case GET_LAMP_INTERVAL: {
+        mySerial.print("HOUR:");
+        mySerial.print(String(myTime.getLampInterval().HOUR));
+        mySerial.print(" MINUTE:");
+        mySerial.print(String(myTime.getLampInterval().MINUTE));
+        mySerial.print(" SECOND:");
+        mySerial.print(String(myTime.getLampInterval().SECOND));
         break;
       }
       case GET_ALL_SSIDS: {
