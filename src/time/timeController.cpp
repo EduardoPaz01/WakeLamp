@@ -1,6 +1,10 @@
 #include "timeController.hpp"
 
 timeController::timeController(void){
+  lastUpdateMillis = millis();
+  TIME.tm_hour = 0;
+  TIME.tm_min = 0;
+  TIME.tm_sec = 0;
 }
 
 void timeController::updateTime(struct tm current_time) {
@@ -18,8 +22,16 @@ class timeClass timeController::getWakeTime(void){
   return WAKE_TIME;
 }
 
-class  timeClass timeController::getLampInterval(void){
+class timeClass timeController::getLampInterval(void){
  return LAMP_INTERVAL;
+}
+
+void timeController::setWakeTime(timeClass newTime){
+  WAKE_TIME = newTime; 
+}
+
+void timeController::setLampInterval(timeClass newTime){
+  LAMP_INTERVAL = newTime;
 }
 
 void timeController::tick(void) {
@@ -44,3 +56,14 @@ void timeController::tick(void) {
   }
 }
 
+timeClass parseTime(String data) {
+  int firstDot = data.indexOf('.');
+  int secondDot = data.indexOf('.', firstDot + 1);
+  int thirdDot = data.indexOf('.', secondDot + 1);
+
+  int hour = data.substring(firstDot + 1, secondDot).toInt();
+  int minute = data.substring(secondDot + 1, thirdDot).toInt();
+  int second = data.substring(thirdDot + 1).toInt();
+
+  return timeClass(hour, minute, second);
+}

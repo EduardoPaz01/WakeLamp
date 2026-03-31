@@ -1,14 +1,5 @@
 #include "serial.hpp"
 
-serial::serial(int FREQUENCY_SERIAL) {
-  FREQUENCY = FREQUENCY_SERIAL;
-  Serial.begin(FREQUENCY);
-}
-
-serial::~serial(void) {
-  Serial.end();
-}
-
 uint32_t serial::processSerial(void) {
   static String buf = "";
   uint32_t return_value = UNKNOWN_CMD; 
@@ -70,6 +61,32 @@ uint32_t serial::processSerial(void) {
         else if(CACHE_LINE == "GET.STATUS"){
           return_value = GET_STATUS;
         }
+        else if(CACHE_LINE == "GET.IP.INFO"){
+          return_value = GET_IP_INFO;
+        }
+        else if(CACHE_LINE.startsWith("SET.IP.STATIC.")){
+          CACHE_LINE = CACHE_LINE.substring(14);
+          BUFFER = String(SET_IP_STATIC) + "." + CACHE_LINE;
+          return_value = SET_IP_STATIC;
+        }
+        else if(CACHE_LINE == "SET.DHCP"){
+          return_value = SET_DHCP;
+        }
+        else if(CACHE_LINE == "TCP.LOGOUT"){
+          return_value = TCP_LOGOUT;
+        }
+        else if(CACHE_LINE == "TCP.DISCONNECT.CLIENT"){
+          return_value = TCP_DISCONNECT_CLIENT;
+        }
+        else if(CACHE_LINE == "GET.SAVED.SSIDS"){
+          return_value = GET_SAVED_SSIDS;
+        }
+        else if(CACHE_LINE == "CLEAR.SAVED.SSIDS"){
+          return_value = CLEAR_SAVED_SSIDS;
+        }
+        else if(CACHE_LINE == "HELP"){
+          return_value = GET_HELP;
+        }
         else {
           return_value = UNKNOWN_CMD;
         }
@@ -90,8 +107,17 @@ uint32_t serial::processSerial(void) {
   return UNKNOWN_CMD;
 }
 
+serial::serial(int FREQUENCY_SERIAL) {
+  FREQUENCY = FREQUENCY_SERIAL;
+  Serial.begin(FREQUENCY);
+}
+
+serial::~serial(void) {
+  Serial.end();
+}
+
 void serial::print(String MESSAGE) {
-  Serial.println(MESSAGE);
+  Serial.print(MESSAGE);
 }
 
 String serial::getBuffer(void) {
